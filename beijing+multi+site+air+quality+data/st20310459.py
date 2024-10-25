@@ -19,8 +19,8 @@ def load_and_merge_data():
     ]
     
     # Load and combine all datasets
-    dataframes = [pd.read_csv(file) for file in file_paths]
-    combined_df = pd.concat(dataframes, ignore_index=True)
+    # dataframes = [pd.read_csv(file) for file in file_paths]
+    # combined_df = pd.concat(dataframes, ignore_index=True)
     
     # Print the combined DataFrame
     print("Combined DataFrame (first 5 rows):")
