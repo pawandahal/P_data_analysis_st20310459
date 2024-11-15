@@ -10,6 +10,8 @@ import threading
 import queue
 
 # Data Handling Functions
+# make predidication  make the condition good,excellent
+# 
 def load_and_merge_data():
     file_paths = [
         r'C:\Users\Acer\Desktop\st20310459\P_data_analysis_st20310459\beijing+multi+site+air+quality+data\data\data_air_control\PRSA_Data_Dingling_20130301-20170228.csv'
@@ -102,11 +104,9 @@ class Application(tk.Tk):
         # Initialize data variable
         self.data = None  
         self.queue = queue.Queue()
-
         self.create_data_overview_tab()
         self.create_eda_tab()
         self.create_modeling_tab()
-
         self.after(100, self.check_queue)
 
     def create_data_overview_tab(self):
