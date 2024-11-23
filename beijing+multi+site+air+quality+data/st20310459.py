@@ -64,3 +64,37 @@ df.drop_duplicates(inplace=True)
 # From this step duplicated value will be remove 
 duplicates_Value_after_column = df.duplicated().sum()
 print("Find the number of Duplicates air quality control value After Removing the air quality value :\n", duplicates_Value_after_column) 
+
+# Step 7: find the number of column value 
+data_air_control_columns_to_check = {'year', 'month', 'day', 'hour'}
+index = 0
+data_air_control_columns_list = list(df.columns)
+
+while index < len(data_air_control_columns_list):
+    if data_air_control_columns_to_check.issubset(data_air_control_columns_list):
+      
+        df['air_quality_data_value_datetime'] = pd.to_datetime(df[['year', 'month', 'day', 'hour']])
+        df.set_index('air_quality_data_value_datetime', inplace=True)
+        break  
+    index += 1
+
+print("\nPreprocessing the value")
+
+# Step 8:find the names of  column 
+index = 0
+while index < len(df.columns):
+    col = df.columns[index]
+    df.rename(columns={col: col.lower().replace(" ", "_")}, inplace=True)
+    index += 1
+
+# Step 9: Output the shape of the dataframe
+print("\nFinding  the air quality data set find the number of rows and columns:", df.shape)
+
+# Step 9: Handle Outliers 
+air_quality_pollutant_columns = [col for col in df.columns if 'pm' in col or 'pollutant' in col]
+print("Finding the missing values in the final result dataset value:\n", df.isnull().sum().sum())
+
+
+for col in air_quality_pollutant_columns:
+    df = df[df[col] <= 500]  # Example threshold; adjust as per data specifics
+print("Find the Sample dataset for air pollution:\n", df.head())
