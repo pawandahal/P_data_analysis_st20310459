@@ -32,3 +32,9 @@ print("\nFirst Few Rows of the Dataset:")
 print(df.head())
 print("\nThe value of  Statistics contain:")
 print(df.describe())
+
+
+# Step 3: Checking the missing value of data set which is contain in the bejing data set which mainly contain the air quality data 
+Air_quality_missing_values = df.isnull().sum()
+print("\nFind the missing Values in Each Column Before Handling the data set for air quality control:")
+print(Air_quality_missing_values[Air_quality_missing_values > 0])
