@@ -20,3 +20,6 @@ file_paths = [
 dataframes = [pd.read_csv(file) for file in file_paths]
 df = pd.concat(dataframes)
 
+# Step 2: Get an overview of the data
+print("How much number of row and colum is there in dataset:", df.shape)
+print("\nAs well as how much Data Types and Non-null Counts in dataset:")
