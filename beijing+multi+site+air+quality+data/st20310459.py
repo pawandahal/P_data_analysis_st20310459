@@ -57,3 +57,10 @@ for air_quality_column in df.columns:
 air_quality_total_missing_after_calculating = df.isnull().sum().sum()
 print("\nCalculating the total Missing Values After Handling of missing value :", air_quality_total_missing_after_calculating)
 
+
+# Step 6: removing the duplicating value in air quality control of pollution
+df.drop_duplicates(inplace=True)
+
+# From this step duplicated value will be remove 
+duplicates_Value_after_column = df.duplicated().sum()
+print("Find the number of Duplicates air quality control value After Removing the air quality value :\n", duplicates_Value_after_column) 
