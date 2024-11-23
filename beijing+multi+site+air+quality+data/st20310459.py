@@ -27,3 +27,8 @@ print("\nAs well as how much Data Types and Non-null Counts in dataset:")
 #step 3:Find the rows number of the dataset
 df.info()
 print("\nFirst Few Rows of the Dataset:")
+
+#step 4:Find the statistics value
+print(df.head())
+print("\nThe value of  Statistics contain:")
+print(df.describe())
