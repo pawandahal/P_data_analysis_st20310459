@@ -20,11 +20,3 @@ file_paths = [
 dataframes = [pd.read_csv(file) for file in file_paths]
 df = pd.concat(dataframes)
 
-# Step 2: Get an overview of the data
-print("Number of rows and columns:", df.shape)
-print("\nData Types and Non-null Counts:")
-df.info()
-print("\nFirst Few Rows of the Dataset:")
-print(df.head())
-print("\nSummary Statistics:")
-print(df.describe())
