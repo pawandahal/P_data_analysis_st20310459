@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 # Step 1: Load and concatenate data from multiple CSV files
-file_paths = [
+air_quality_data_set_file_paths = [
     r'C:\Users\Acer\Desktop\st20310459\P_data_analysis_st20310459\beijing+multi+site+air+quality+data\data\data_air_control\PRSA_Data_Aotizhongxin_20130301-20170228.csv',
     r"C:\Users\Acer\Desktop\st20310459\P_data_analysis_st20310459\beijing+multi+site+air+quality+data\data\data_air_control\PRSA_Data_Changping_20130301-20170228.csv",
     r'C:\Users\Acer\Desktop\st20310459\P_data_analysis_st20310459\beijing+multi+site+air+quality+data\data\data_air_control\PRSA_Data_Dingling_20130301-20170228.csv',
@@ -17,8 +17,8 @@ file_paths = [
     r"C:\Users\Acer\Desktop\st20310459\P_data_analysis_st20310459\beijing+multi+site+air+quality+data\data\data_air_control\PRSA_Data_Wanshouxigong_20130301-20170228.csv"
 ]
 
-dataframes = [pd.read_csv(file) for file in file_paths]
-df = pd.concat(dataframes)
+data_set_frames = [pd.read_csv(file) for file in air_quality_data_set_file_paths]
+df = pd.concat(data_set_frames)
 
 # Step 2: Get an overview of the data
 print("How much number of row and colum is there in dataset:", df.shape)
@@ -34,7 +34,26 @@ print("\nThe value of  Statistics contain:")
 print(df.describe())
 
 
-# Step 3: Checking the missing value of data set which is contain in the bejing data set which mainly contain the air quality data 
+# Step 5: Checking the missing value of data set which is contain in the bejing data set which mainly contain the air quality data 
 Air_quality_missing_values = df.isnull().sum()
-print("\nFind the missing Values in Each Column Before Handling the data set for air quality control:")
+print("\nFinding missing air quality data  Values in Each Column Before Handling the data set:")
 print(Air_quality_missing_values[Air_quality_missing_values > 0])
+
+
+
+# Step 5:Try to  handling the missing value 
+def handle_missing_air_quality_data_values(column):
+    different_type_of_case_value = {
+        'float64': lambda col: col.interpolate(method='linear'),
+        'int64': lambda col: col.interpolate(method='linear'),
+        'object': lambda col: col.fillna(col.mode()[0]),
+    }
+
+    return different_type_of_case_value.get(str(column.dtype), lambda col: col)(column)
+
+# using for loop for calculating the missing value after handling of missing value 
+for air_quality_column in df.columns:
+    df[air_quality_column] = handle_missing_air_quality_data_values(df[air_quality_column])
+air_quality_total_missing_after_calculating = df.isnull().sum().sum()
+print("\nCalculating the total Missing Values After Handling of missing value :", air_quality_total_missing_after_calculating)
+
