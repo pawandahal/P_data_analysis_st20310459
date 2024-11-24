@@ -96,5 +96,91 @@ print("Finding the missing values in the final result dataset value:\n", df.isnu
 
 
 for col in air_quality_pollutant_columns:
-    df = df[df[col] <= 500]  # Example threshold; adjust as per data specifics
+    df = df[df[col] <= 500] 
 print("Find the Sample dataset for air pollution:\n", df.head())
+
+
+# Statistical summary value for getting the air quality 
+air_pollution_data_value = df.describe(include='all')  
+print(air_pollution_data_value)
+
+
+
+
+
+#converting the numeric value in column
+df = df.apply(pd.to_numeric, errors='coerce')
+
+# calculating the median,mode and mean 
+air_quality_mean_values = df.mean()
+air_quality_median_values = df.median()
+air_quality_mode_values = df.mode().iloc[0]  
+
+
+air_quality_summary_df_value_statics = pd.DataFrame({
+    'air_quality_Mean': air_quality_mean_values,
+    'air_quality_Median': air_quality_median_values,
+    'air_quality_Mode': air_quality_mode_values
+})
+
+
+air_quality_summary_df = air_quality_summary_df_value_statics.dropna()
+
+
+plt.figure(figsize=(18, 9))
+sns.set(style="whitegrid")
+air_quality_summary_df.plot(kind='bar', figsize=(18, 9))
+
+plt.title('air_quality_Mean, air_quality_Median, and air_quality_Mode of Numeric Columns')
+plt.ylabel('air_quality_Values')
+plt.xlabel('air_quality_Columns')
+plt.xticks(rotation=45)
+
+plt.tight_layout()
+plt.show()
+
+
+plt.figure(figsize=(18, 9))
+
+for column in df.select_dtypes(include='number').columns:
+    sns.kdeplot(df[column].dropna(), label=column, fill=True, alpha=0.5)
+
+plt.title('Normal Distribution of Numeric Columns (Continuous)')
+plt.xlabel('air_quality_Value')
+plt.ylabel('air_quality_Density')
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+# 3. Now plot histograms for discrete values
+discrete_columns = df.select_dtypes(include='integer').columns
+
+plt.figure(figsize=(18, 7))
+
+for column in discrete_columns:
+    plt.subplot(len(discrete_columns), 1, list(discrete_columns).index(column) + 1)
+    sns.histplot(df[column], bins=10, kde=True)  # KDE overlay for better visualization
+    plt.title(f'Histogram of {column}')
+    plt.xlabel('Value')
+    plt.ylabel('Frequency')
+
+plt.tight_layout()
+plt.show()
+
+# 4. Combined figure to show continuous and discrete values
+plt.figure(figsize=(18, 9))
+
+# Continuous KDE plots
+for column in df.select_dtypes(include='number').columns:
+    sns.kdeplot(df[column].dropna(), label=f'KDE {column}', fill=True, alpha=0.3)
+
+# Discrete histograms
+for column in discrete_columns:
+    sns.histplot(df[column], bins=10, kde=True, label=f'Histogram {column}', alpha=0.3)
+
+plt.title('Getting the value of Continuous and Discrete Distributions Together')
+plt.xlabel('Value')
+plt.ylabel('Density / Frequency')
+plt.legend()
+plt.tight_layout()
+plt.show()
