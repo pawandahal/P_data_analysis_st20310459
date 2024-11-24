@@ -131,10 +131,30 @@ for Box_plot_column in Box:
     plt.title(f'Box Plot of {Box_plot_column}')
     plt.xlabel(Box_plot_column)
     plt.show()
-# Now comparing the vlaue 
-x_column = 'pm2.5' 
-y_column = 'pm10'   
 
+
+# Now comparing the vlaue 
+air_quality_data_x_column = 'pm2.5' 
+air_quality_data_y_column = 'pm10'   
+# Check for numeric columns
+air_quality_data_numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+print("Find the Numeric columns of air quality control :", air_quality_data_numeric_columns)
+
+sns.pairplot(df[air_quality_data_numeric_columns])
+plt.suptitle('Find the Pairplot of Numeric Variables of air quality control data ', y=1.02)
+plt.show()
+
+
+air_quality_data_x_column = 'pm2.5'
+air_quality_data_y_column = 'pm10'  
+# Try to find the bar chart 
+plt.figure(figsize=(12, 6))
+sns.barplot(data=df, x=air_quality_data_x_column, y=air_quality_data_y_column, estimator=sum)
+plt.title('Find the Bar Chart of PM2.5 vs PM10')
+plt.xticks(rotation=45)
+plt.xlabel('PM2.5 air quality control data  Levels')
+plt.ylabel('PM10 air quality control data  Levels')
+plt.show()
 
 # Statistical summary value for getting the air quality 
 air_pollution_data_value = df.describe(include='all')  
