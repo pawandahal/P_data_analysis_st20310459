@@ -100,6 +100,38 @@ for col in air_quality_pollutant_columns:
 print("Find the Sample dataset for air pollution:\n", df.head())
 
 
+#NOw find the different type of graph
+histogram = df.select_dtypes(include=['float64', 'int64']).columns
+
+# Box plot
+Box = df.select_dtypes(include=['float64', 'int64']).columns
+
+# Initialize the index for the while loop
+index_value = 0
+
+# Iterate through the numeric columns
+while index_value < len(histogram):
+    value = histogram[index_value]  # Use index_value here
+    
+    # Plot the histogram
+    plt.figure(figsize=(10, 5))
+    sns.histplot(df[value], bins=30, kde=True)
+    plt.title(f'Find the Histogram of given air quality {value}')
+    plt.xlabel(value)
+    plt.ylabel('Frequency')
+    plt.show()
+    
+    # Increment the index
+    index_value += 1  # Use index_value here
+
+# Box Plots for Outlier Detection
+for Box_plot_column in Box:
+    plt.figure(figsize=(10, 5))
+    sns.boxplot(x=df[Box_plot_column])
+    plt.title(f'Box Plot of {Box_plot_column}')
+    plt.xlabel(Box_plot_column)
+    plt.show()
+
 # Statistical summary value for getting the air quality 
 air_pollution_data_value = df.describe(include='all')  
 print(air_pollution_data_value)
