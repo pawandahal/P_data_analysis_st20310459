@@ -131,6 +131,10 @@ for Box_plot_column in Box:
     plt.title(f'Box Plot of {Box_plot_column}')
     plt.xlabel(Box_plot_column)
     plt.show()
+# Now comparing the vlaue 
+x_column = 'pm2.5' 
+y_column = 'pm10'   
+
 
 # Statistical summary value for getting the air quality 
 air_pollution_data_value = df.describe(include='all')  
