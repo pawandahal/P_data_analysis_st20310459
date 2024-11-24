@@ -184,3 +184,29 @@ plt.ylabel('Density / Frequency')
 plt.legend()
 plt.tight_layout()
 plt.show()
+
+
+# find the z-score sitribution of numeric column making more accurate 
+# importing scipy for calculating z-index value
+from scipy import stats
+
+air_quality_df = df.apply(pd.to_numeric, errors='coerce')
+
+
+z_scores_df_air_quality = air_quality_df.apply(lambda x: stats.zscore(x, nan_policy='omit'))
+
+
+plt.figure(figsize=(18, 9))
+
+for column in z_scores_df_air_quality.columns:
+    sns.kdeplot(z_scores_df_air_quality[column].dropna(), label=f'Z-score {column}', fill=True, alpha=0.5)
+
+plt.title('Fidn the value of Z-Score Distribution of Numeric Columns in graph')
+plt.xlabel('air_quality_Z-Score')
+plt.ylabel('air_quality_Density')
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+
+
