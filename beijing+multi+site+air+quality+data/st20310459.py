@@ -1,94 +1,136 @@
+
 import pandas as pd
 import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
-import folium
-from folium.plugins import MarkerCluster
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.impute import SimpleImputer
-import nbformat as nbf
+import folium
+from folium.plugins import MarkerCluster
+
+# adding the css component for making more interactive component
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f8f9fa;
+    }
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {
+        font-family: 'Poppins', sans-serif;
+        color: #3c4043;
+        font-weight: 600;
+    }
+    .stSidebar {
+        font-family: 'Poppins', sans-serif;
+        color: #3c4043;
+    }
+    .stButton button {
+        font-family: 'Poppins', sans-serif;
+        background-color: #007bff;
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    .stButton button:hover {
+        background-color: #0056b3;
+    }
+    .stMarkdown {
+        font-family: 'Poppins', sans-serif;
+        color: #3c4043;
+    }
+    .stAlert {
+        font-family: 'Poppins', sans-serif;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Function to load and preprocess data
-def data_handling(data_handling):
-    data_handling_list = []
-    for data_handling_file in data_handling:
-        df = pd.read_csv(data_handling_file)
-        data_handling_list.append(df)
-
+def data_handling(data_files):
+    # Initialize an empty list to store the dataframes
+    air_quality_data_list = []
+    for data_file in data_files:
+        df = pd.read_csv(data_file)
+        air_quality_data_list.append(df)
+    
     # Combine all datasets into one DataFrame
-    data_handling_part_system = pd.concat(data_handling_list, ignore_index=True)
-
-    # Handle missing values
-    data_handling_part_system.fillna(method='ffill', inplace=True)  # Forward fill missing values
-
+    combination_air_quality_df = pd.concat(air_quality_data_list, ignore_index=True)
+    
+    # Handle missing values (forward fill)
+    combination_air_quality_df.fillna(method='ffill', inplace=True)
+    
     # Remove duplicate entries
-    data_handling_part_system.drop_duplicates(inplace=True)
+    combination_air_quality_df.drop_duplicates(inplace=True)
+    
+    # Feature engineering (if 'air_quality_year' column exists)
+    if 'air_quality_year' in combination_air_quality_df.columns:
+        combination_air_quality_df['air_quality_year'] = pd.to_datetime(combination_air_quality_df['air_quality_year'], errors='coerce')
+        combination_air_quality_df['air_quality_Month'] = combination_air_quality_df['air_quality_year'].dt.month
+        combination_air_quality_df.dropna(subset=['air_quality_year'], inplace=True)
+    
+    return combination_air_quality_df
 
-    # Feature engineering (e.g., create 'Month' from 'year')
-    if 'year' in data_handling_part_system.columns:
-        data_handling_part_system['year'] = pd.to_datetime(data_handling_part_system['year'], errors='coerce')
-        data_handling_part_system['Month'] = data_handling_part_system['year'].dt.month
-        data_handling_part_system.dropna(subset=['year'], inplace=True)
-
-    return data_handling_part_system
+# Function to create a map visualization
+def map_state_air_quality_beijing(data):
+    # Initialize the map centered around a default location (latitude, longitude)
+    air_quality_map_center = [data['latitude'].mean(), data['longitude'].mean()]
+    my_map = folium.Map(location=air_quality_map_center, zoom_start=10)
+    
+    # Add markers for each location in the dataset
+    air_quality_marker_cluster = MarkerCluster().add_to(my_map)
+    for _, row in data.iterrows():
+        folium.Marker(
+            location=[row['latitude'], row['longitude']],
+            popup=f"Station: {row['Station']}, {row['air_quality_year']}, Value: {row.get('value', 'N/A')}"
+        ).add_to(air_quality_marker_cluster)
+    
+    return my_map
 
 # Streamlit App
 def main():
-    st.title(" Air Quality Data Analysis system Using streamlit")
-    st.sidebar.title("Clicking the option value ")
+    st.markdown("<h1 style='text-align: center; color: #3c4043;'>Air Quality Data Analysis System</h1>", unsafe_allow_html=True)
+    st.sidebar.title("Option items listed")
 
-    # Upload CSV files
-    uploaded_files = st.sidebar.file_uploader("Upload CSV files according to user like ", type=["csv"], accept_multiple_files=True)
-    
-    if uploaded_files:
-        # Process uploaded files
-        data = pd.concat([data_handling([uploaded_file]) for uploaded_file in uploaded_files], ignore_index=True)
-        st.success("Datasets loaded and processed successfully!")
-    else:
-        st.warning("Upload your CSV file")
+    # Upload CSV files for different sections (one or more files)
+    air_quality_upload_csv_file = st.sidebar.file_uploader("Manual uploading the csv file and user friendly environment:", type=["csv"], accept_multiple_files=True)
 
-    # Sidebar options
-    show_data = st.sidebar.checkbox("Data Handling")
-    summary_stats = st.sidebar.checkbox("Exploratory Data Analysis (EDA)")
-    model_building = st.sidebar.checkbox("Machine Learning Model Building")
-    model_evaluation = st.sidebar.checkbox("Model Evaluation")
-
-    # Show dataset insights
-    if 'data' in locals():
-        st.subheader("Dataset ")
-        rows, columns = data.shape
-        st.write(f"The dataset contains **{rows} rows** and **{columns} columns**.")
-        st.write("The columns in the dataset are:")
+    # Process uploaded files
+    if air_quality_upload_csv_file:
+        data = data_handling(air_quality_upload_csv_file)
+        st.success(f"{len(air_quality_upload_csv_file)} file(s) loaded and processed successfully!")
+        # Show dataset insights
+        st.markdown("<h2 style='text-align: center; color: #3c4043;'>Dataset Information</h2>", unsafe_allow_html=True)
+        air_quality_row, columns = data.shape
+        st.write(f"The dataset contains in air quality of china-beijing**{air_quality_row} air_quality_row** and **{columns} columns**.")
+        st.write("The columns in the dataset of air quality data set for china-beijing:")
         st.write(data.columns.tolist())
 
         # Show data types and check for missing values
-        st.write("\n**Data Types of Each Column:**")
+        st.markdown("<h3 style='text-align: center; color: #3c4043;'>Data Types and Missing Values</h3>", unsafe_allow_html=True)
         st.write(data.dtypes)
-
-        missing_values = data.isnull().sum()
-        st.write("\n**Missing Values:**")
-        st.write(missing_values)
+        st.write("\n** Air quality Missing Values:**")
+        st.write(data.isnull().sum())
 
         # Show raw data
-        if show_data:
-            st.subheader("Initial Data set")
+        if st.sidebar.checkbox("Task 1 which mainly includes"):
+            st.markdown("<h3 style='text-align: center; color: #3c4043;'>Dataset Preview</h3>", unsafe_allow_html=True)
             st.dataframe(data.head())
 
         # Show summary statistics
-        if summary_stats:
-            st.subheader(" Show all the value of Statistics For dataset")
+        if st.sidebar.checkbox("Exploratory Data Analysis (EDA)"):
+            st.markdown("<h3 style='text-align: center; color: #3c4043;'>Summary Statistics</h3>", unsafe_allow_html=True)
             st.write(data.describe())
 
             # Display graphs for each numeric column
-            st.subheader("Visualizations Features Of air quality")
+            st.markdown("<h3 style='text-align: center; color: #3c4043;'>Visualizations</h3>", unsafe_allow_html=True)
             numeric_columns = data.select_dtypes(include=['float64', 'int64']).columns.tolist()
 
             for column in numeric_columns:
-                st.subheader(f"Visualization for {column}")
+                st.markdown(f"<h5 style='text-align: center; color: #00FFFF;'>Visualization for {column}</h5>", unsafe_allow_html=True)
                 plt.figure(figsize=(10, 6))
                 sns.histplot(data[column], kde=True, color='skyblue', bins=30)
                 st.pyplot(plt)
@@ -98,43 +140,31 @@ def main():
                 sns.boxplot(data[column], color='lightgreen')
                 st.pyplot(plt)
 
-        # Map for highest pollution levels
-        st.subheader("Map: Highest Pollution Locations")
+        # Show Map if relevant columns are present
         if 'latitude' in data.columns and 'longitude' in data.columns:
-            if 'PM2.5' in data.columns:
-                highest_pollution_station = data.loc[data['PM2.5'].idxmax()]
-                m = folium.Map(location=[39.9042, 116.4074], zoom_start=10)
-                marker_cluster = MarkerCluster().add_to(m)
-                folium.Marker(
-                    location=[highest_pollution_station['latitude'], highest_pollution_station['longitude']],
-                    popup=f"Station: {highest_pollution_station.get('Station', 'Unknown')}<br>PM2.5: {highest_pollution_station['PM2.5']}",
-                    icon=folium.Icon(color='red')
-                ).add_to(marker_cluster)
-                st.write(" Highest pollution is displayed")
-                st.components.v1.html(m._repr_html_(), height=500)
-            else:
-                st.write("PM2.5 data is missing in the dataset. Please check in the CSV file.")
-        else:
-            st.write("Latitude and Longitude data are missing. Please check in the CSV dataset.")
+            st.markdown("<h3 style='text-align: center; color: #3c4043;'>Geographical Locations on Map</h3>", unsafe_allow_html=True)
+            st.subheader("Map Showing Locations from Dataset")
+            map_data = map_state_air_quality_beijing(data)
+            st_folium(map_data, width=725, height=500)
 
         # Machine Learning Model Building
-        if model_building:
-            st.subheader("Implementing the Machine learning method")
-            target_column = st.selectbox("Select  Variable:", numeric_columns)
+        if st.sidebar.checkbox("Machine Learning Model Building"):
+            st.markdown("<h3 style='text-align: center; color: #3c4043;'>Machine Learning Model Building</h3>", unsafe_allow_html=True)
+            target_column = st.selectbox("Select Target Variable:", numeric_columns)
 
-            features = data.drop(columns=['year', 'Station', target_column], errors='ignore')
+            features = data.drop(columns=['air_quality_year', 'Station', target_column], errors='ignore')
             target = data[target_column]
 
             # Remove rows where the target variable contains NaN
             data_clean = data.dropna(subset=[target_column])
-            features_clean = data_clean.drop(columns=['year', 'Station', target_column], errors='ignore')
+            features_clean = data_clean.drop(columns=['air_quality_year', 'Station', target_column], errors='ignore')
             target_clean = data_clean[target_column]
 
             # Encoding categorical features (if any)
             features_clean = pd.get_dummies(features_clean, drop_first=True)
 
             # Handle missing values using SimpleImputer
-            imputer = SimpleImputer(strategy='mean')  # Use 'mean' for imputation
+            imputer = SimpleImputer(strategy='mean')
             features_imputed = imputer.fit_transform(features_clean)
 
             # Feature scaling
@@ -145,22 +175,18 @@ def main():
             X_train, X_test, y_train, y_test = train_test_split(features_scaled, target_clean, test_size=0.2, random_state=42)
 
             # Choose model
-            model_type = st.selectbox("Select Method for machine learning Model:", ["Linear Regression", "Random Forest"])
-            if model_type == "Linear Regression":
-                model = LinearRegression()
-            else:
-                model = RandomForestRegressor(random_state=42)
+            model_type = st.selectbox("Select Machine Learning Model:", ["Linear Regression", "Random Forest"])
+            model = LinearRegression() if model_type == "Linear Regression" else RandomForestRegressor(random_state=42)
 
             # Fit the model
             model.fit(X_train, y_train)
             y_pred = model.predict(X_test)
 
-            # Evaluation
-            if model_evaluation:
-                st.subheader("Model Evaluation")
-                st.write("Mean Absolute Error:", mean_absolute_error(y_test, y_pred))
-                st.write("Mean Squared Error:", mean_squared_error(y_test, y_pred))
-                st.write("R-Squared:", r2_score(y_test, y_pred))
+            # Model Evaluation
+            st.markdown("<h3 style='text-align: center; color: #3c4043;'>Model Evaluation</h3>", unsafe_allow_html=True)
+            st.write("Mean Absolute Error:", mean_absolute_error(y_test, y_pred))
+            st.write("Mean Squared Error:", mean_squared_error(y_test, y_pred))
+            st.write("R-Squared:", r2_score(y_test, y_pred))
 
 if __name__ == '__main__':
     main()
