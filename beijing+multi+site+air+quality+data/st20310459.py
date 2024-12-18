@@ -11,6 +11,8 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.impute import SimpleImputer
 import folium
 from folium.plugins import MarkerCluster
+import folium
+from streamlit_folium import st_folium
 
 # adding the css component for making more interactive component
 st.markdown("""
@@ -50,7 +52,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Function to load and preprocess data
-def data_handling(data_files):
+def air_quality_data_handling(data_files):
     # Initialize an empty list to store the dataframes
     air_quality_data_list = []
     for data_file in data_files:
@@ -100,7 +102,7 @@ def main():
 
     # Process uploaded files
     if air_quality_upload_csv_file:
-        data = data_handling(air_quality_upload_csv_file)
+        data = air_quality_data_handling(air_quality_upload_csv_file)
         st.success(f"{len(air_quality_upload_csv_file)} file(s) loaded and processed successfully!")
         # Show dataset insights
         st.markdown("<h2 style='text-align: center; color: #3c4043;'>Dataset Information</h2>", unsafe_allow_html=True)
